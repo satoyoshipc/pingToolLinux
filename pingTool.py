@@ -128,7 +128,8 @@ class  Ping(object):
             
         #ファイルに書き込み
         with open(JSONFile, 'w') as ft:
-            json.dump(filejson, ft)
+            json.dump(filejson, ft,ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': '))
+
 
 def  sendTrap(host,REPAIRflg):
     
