@@ -11,6 +11,7 @@ global ERRORCOUNT
 global REPAIRCOUNT
 global JSONFile
 global IP_LIST_FILE
+global TRAPSERVER
 
 #----------------------------------------------------
 #トラップ送信する連続障害回数
@@ -18,10 +19,9 @@ ERRORCOUNT = 5
 #トラップ送信する連続復旧回数
 REPAIRCOUNT = 1
 #結果出力ファイル
-JSONFile = "sample.json"
+JSONFile = "tmpfile.json"
 #結果出力ファイル
 IP_LIST_FILE = "HostListFile"
-global TRAPSERVER
 #トラップサーバ
 TRAPSERVER = "192.168.12.174"
 #----------------------------------------------------
