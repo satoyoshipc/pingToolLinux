@@ -8,27 +8,23 @@ logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
 
 global ERRORCOUNT
+global REPAIRCOUNT
+global JSONFile
+global IP_LIST_FILE
+
+#----------------------------------------------------
 #トラップ送信する連続障害回数
 ERRORCOUNT = 5
-
-global REPAIRCOUNT
 #トラップ送信する連続復旧回数
 REPAIRCOUNT = 1
-
-global JSONFile
 #結果出力ファイル
 JSONFile = "sample.json"
-
-global IP_LIST_FILE
 #結果出力ファイル
 IP_LIST_FILE = "HostListFile"
-
 global TRAPSERVER
-
 #トラップサーバ
 TRAPSERVER = "192.168.12.174"
-
-
+#----------------------------------------------------
 
 HISTjson =  []
 outjson = []
@@ -36,7 +32,7 @@ filejson = []
 
 #ログ出力
 
-logger.warn("ERROR OUT")
+#logger.warn("ERROR OUT")
 
 if os.path.isfile(JSONFile):
 
@@ -146,7 +142,7 @@ def  sendTrap(host,REPAIRflg):
         logger.warn('[障害] トラップを送信しました。 ' + 'ServerName->' + host)
 
     snmptrp = subprocess.call ( cmd.strip().split(" ") )
-    print (snmptrp)
+    #print (snmptrp)
     #logger.warn(snmptrp,'ServerName->' + host )
     
 if __name__ == '__main__':
@@ -159,6 +155,6 @@ if __name__ == '__main__':
     f = open(IP_LIST_FILE)
     hosts = f.read().strip().split("\n") # 1行毎にファイル終端まで全て読む(改行文字も含まれる)
     f.close()
-    print (hosts)
+    #print (hosts)
     
     Ping(hosts)
