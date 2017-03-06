@@ -15,12 +15,12 @@ global TRAPSERVER
 
 #----------------------------------------------------
 #トラップ送信する連続障害回数
-ERRORCOUNT = 5
+ERRORCOUNT = 1
 #トラップ送信する連続復旧回数
 REPAIRCOUNT = 1
 #結果出力ファイル
 JSONFile = "tmpfile.json"
-#結果出力ファイル
+#ホストIPアドレス一覧ファイル
 IP_LIST_FILE = "HostListFile"
 #トラップサーバ
 TRAPSERVER = "192.168.12.174"
@@ -50,8 +50,8 @@ class  Ping(object):
         for host in hosts:
         #for host in hosts.iterkeys():
             jline=0
-            count= 0
-            status= 0
+            count=0
+            status=0
             newflg=True
             
             for attr in HISTjson:
@@ -93,13 +93,14 @@ class  Ping(object):
                 else:
 
                     #発生時
-                    if count == ERRORCOUNT :
-                        REPAIRflg = False
-                        sendTrap(host,REPAIRflg)
                     #２回目以降
                     outjson['count'] = count+1
                     outjson['status'] = -1
                     
+                if count+1 == ERRORCOUNT :
+                    REPAIRflg = False
+                    sendTrap(host,REPAIRflg)
+
                 logger.warn('[NG]: ' + 'ServerName->' + host + ', Msg->\'' + msg + '\'')
                 
                 
@@ -142,9 +143,8 @@ def  sendTrap(host,REPAIRflg):
         cmd = "snmptrap -v 1 -c public %s .1.3.6.1.4.1.119.1.212.2.2.3 %s 6 10 '' .1.3.6.1.4.1.119.1.212.2.2.3.1 i 1" % (TRAPSERVER,host)
         logger.warn('[障害] トラップを送信しました。 ' + 'ServerName->' + host)
 
-    snmptrp = subprocess.call ( cmd.strip().split(" ") )
-    #print (snmptrp)
-    #logger.warn(snmptrp,'ServerName->' + host )
+    snmptrp = subprocess.Popen ( cmd.strip().split(" "),stderr=subprocess.PIPE, stdout=subprocess.PIPE )
+    logger.warn(snmptrp.communicate() )
     
 if __name__ == '__main__':
 
