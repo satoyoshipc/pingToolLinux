@@ -142,11 +142,11 @@ def  sendTrap(host,REPAIRflg):
     
     if REPAIRflg :
         #復旧
-        cmd = "snmptrap -v 1 -c public %s .1.3.6.1.4.1.119.1.212.2.2.3 %s 6 10 '' .1.3.6.1.4.1.119.1.212.2.2.3.1 i 0" % (TRAPSERVER,host)
+        cmd = "snmptrap -v 1 -c public %s .1.3.6.1.4.1.119.1.212.2.2.4 %s 6 10 '' .1.3.6.1.4.1.119.1.212.2.2.4.1 i 0" % (TRAPSERVER,host)
         logger.warn('[復旧] トラップを送信しました。 ' + 'ServerName->' + host)
     else:
         #障害
-        cmd = "snmptrap -v 1 -c public %s .1.3.6.1.4.1.119.1.212.2.2.3 %s 6 10 '' .1.3.6.1.4.1.119.1.212.2.2.3.1 i 1" % (TRAPSERVER,host)
+        cmd = "snmptrap -v 1 -c public %s .1.3.6.1.4.1.119.1.212.2.2.4 %s 6 10 '' .1.3.6.1.4.1.119.1.212.2.2.4.1 i 1" % (TRAPSERVER,host)
         logger.warn('[障害] トラップを送信しました。 ' + 'ServerName->' + host)
 
     snmptrp = subprocess.Popen ( cmd.strip().split(" "),stderr=subprocess.PIPE, stdout=subprocess.PIPE )
