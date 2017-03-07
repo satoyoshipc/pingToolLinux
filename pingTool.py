@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # vim: fileencoding=utf-8
-import json
+try:
+    import json
+except ImportError:
+    import simplejson as json
+    
 import subprocess
 import os
 import logging.config
@@ -15,7 +19,7 @@ global TRAPSERVER
 
 #----------------------------------------------------
 #トラップ送信する連続障害回数
-ERRORCOUNT = 1
+ERRORCOUNT = 20
 #トラップ送信する連続復旧回数
 REPAIRCOUNT = 1
 #結果出力ファイル
@@ -37,12 +41,14 @@ filejson = []
 if os.path.isfile(JSONFile):
 
     #読み込み
-    with open(JSONFile, 'r') as file:
-        try:
-            HISTjson = json.load(file)
-        except ValueError, e :
-            logger.warn(e)
-            
+    fi = open(JSONFile, 'r')
+    try:
+        HISTjson = json.load(fi)
+    except Exception,err:
+        logger.warn(err)
+    
+    fi.close()
+
 class  Ping(object):
     def __init__(self, hosts):
         loss_pat='0 received'
@@ -128,9 +134,9 @@ class  Ping(object):
             filejson.append(outjson)
             
         #ファイルに書き込み
-        with open(JSONFile, 'w') as ft:
-            json.dump(filejson, ft,ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': '))
-
+        ft = open(JSONFile, 'w') 
+        json.dump(filejson, ft,ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': '))
+        ft.close()
 
 def  sendTrap(host,REPAIRflg):
     
