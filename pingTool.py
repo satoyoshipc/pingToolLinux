@@ -7,6 +7,7 @@ except ImportError:
     
 import subprocess
 import os
+import sys
 import logging.config
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
@@ -27,7 +28,7 @@ JSONFile = "tmpfile.json"
 #ホストIPアドレス一覧ファイル
 IP_LIST_FILE = "HostListFile"
 #トラップサーバ
-TRAPSERVER = "192.168.12.174"
+TRAPSERVER = "192.168.20.62"
 #----------------------------------------------------
 
 HISTjson =  []
@@ -157,6 +158,15 @@ if __name__ == '__main__':
     #hosts=map(lambda x:'xxx.xxx.xxx.'+str(x),range(1,255))
     #hosts= ['192.168.12.5','192.168.12.100'];
     #hosts = {"192.168.12.5":0}
+
+    #現用待機のチェック
+    cmd='grep system.Primary /usr/local/SWing/conf/common/systemstate.properties | cut -d "=" -f 2'
+    actsby = subprocess.Popen ( cmd,shell = True, stderr=subprocess.PIPE, stdout=subprocess.PIPE )
+    out, error = actsby.communicate()
+
+    #ACT 現用  SBY 待機
+    if out.strip() == 'SBY' :
+        sys.exit()
     
     #ファイルを読み込む
     f = open(IP_LIST_FILE)
