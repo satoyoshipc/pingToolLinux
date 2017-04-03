@@ -8,6 +8,7 @@ except ImportError:
 import subprocess
 import os
 import sys
+import datetime
 import logging.config
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
@@ -28,7 +29,10 @@ JSONFile = "tmpfile.json"
 #ホストIPアドレス一覧ファイル
 IP_LIST_FILE = "HostListFile"
 #トラップサーバ
-TRAPSERVER = "192.168.20.62"
+#TRAPSERVER = "192.168.20.62"
+TRAPSERVER = "192.168.12.174"
+#システムプロパティファイル
+SYSTEMFILE_PATH = "/usr/local/SWing/conf/common/systemstate.properties"
 #----------------------------------------------------
 
 HISTjson =  []
@@ -106,7 +110,10 @@ class  Ping(object):
                     
                 if count+1 == ERRORCOUNT :
                     REPAIRflg = False
-                    sendTrap(host,REPAIRflg)
+                    #タイムスタンプの30分後の時間を取得
+                    ret = changeWaitIntervalChk()
+                    if ret == True :
+                        sendTrap(host,REPAIRflg)
 
                 logger.warn('[NG]: ' + 'ServerName->' + host + ', Msg->\'' + msg + '\'')
                 
@@ -127,7 +134,10 @@ class  Ping(object):
                         
                         logger.warn('[復旧]: ' + 'ServerName->' + host)
 
-                        sendTrap(host,REPAIRflg)
+                        #タイムスタンプの30分後の時間を取得
+                        ret = changeWaitIntervalChk()
+                        if ret == True :
+                            sendTrap(host,REPAIRflg)
                     else:
                         #２回目以降
                         HISTjson[jline]['count'] = 0
@@ -140,7 +150,7 @@ class  Ping(object):
         ft.close()
 
 def  sendTrap(host,REPAIRflg):
-    
+     
     if REPAIRflg :
         #復旧
         cmd = "snmptrap -v 1 -c public %s .1.3.6.1.4.1.119.1.212.2.2.4 %s 6 10 '' .1.3.6.1.4.1.119.1.212.2.2.4.1 i 0" % (TRAPSERVER,host)
@@ -152,7 +162,18 @@ def  sendTrap(host,REPAIRflg):
 
     snmptrp = subprocess.Popen ( cmd.strip().split(" "),stderr=subprocess.PIPE, stdout=subprocess.PIPE )
     logger.warn(snmptrp.communicate() )
-    
+
+def changeWaitIntervalChk() :
+    #タイムスタンプの30分後の時間を取得
+    sysproUtime = datetime.datetime.fromtimestamp(os.stat(SYSTEMFILE_PATH).st_mtime) + datetime.timedelta(minutes = 30)
+    nowtm = datetime.datetime.now()
+    print (sysproUtime)
+    #時間を比較し30分以上経過していなかったらフラグFALSEを返す
+    delta=nowtm - sysproUtime 
+    if delta.days == -1 :
+        logger.warn('切り替え直後はトラップを発信しません')
+        return False
+    return True    
 if __name__ == '__main__':
 
     #hosts=map(lambda x:'xxx.xxx.xxx.'+str(x),range(1,255))
@@ -160,14 +181,14 @@ if __name__ == '__main__':
     #hosts = {"192.168.12.5":0}
 
     #現用待機のチェック
-    cmd='grep system.Primary /usr/local/SWing/conf/common/systemstate.properties | cut -d "=" -f 2'
+    cmd='grep system.Primary ' + SYSTEMFILE_PATH + ' | cut -d "=" -f 2'
     actsby = subprocess.Popen ( cmd,shell = True, stderr=subprocess.PIPE, stdout=subprocess.PIPE )
     out, error = actsby.communicate()
 
     #ACT 現用  SBY 待機
     if out.strip() == 'SBY' :
         sys.exit()
-    
+       
     #ファイルを読み込む
     f = open(IP_LIST_FILE)
     hosts = f.read().strip().split("\n") # 1行毎にファイル終端まで全て読む(改行文字も含まれる)
